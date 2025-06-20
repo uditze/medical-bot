@@ -1,10 +1,12 @@
+// This file no longer needs the full Firebase SDK config.
+
 document.addEventListener('DOMContentLoaded', () => {
     const chatLog = document.getElementById('chat-log');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-    // The URL of our Cloud Function
-    const cloudFunctionUrl = 'https://chat-g5kzn6p5pq-uc.a.run.app'; // IMPORTANT: This is the 2nd Gen Function URL
+    // This is now a simple, relative URL thanks to the rewrite rule in firebase.json
+    const cloudFunctionUrl = '/api/chat';
 
     function addMessage(sender, text) {
         const messageElement = document.createElement('div');
@@ -23,24 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
         setChatState(false);
 
         try {
-            // Using standard fetch to call our onRequest function
             const response = await fetch(cloudFunctionUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: messageText }),
             });
 
             if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Server error: ${response.status}`);
             }
 
             const data = await response.json();
             addMessage('bot', data.reply);
 
         } catch (error) {
-            console.error("Error communicating with server:", error);
+            console.error("Error communicating with server:", error.message);
             addMessage('bot', 'אופס, התרחשה שגיאה בתקשורת עם השרת.');
         } finally {
             setChatState(true);
