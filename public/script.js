@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-    // The new, real, and correct URL for our 2nd Gen Cloud Function
+    // The correct URL for our 2nd Gen Cloud Function
     const cloudFunctionUrl = 'https://chat-uduwuioy5q-uc.a.run.app';
 
     function addMessage(sender, text) {
@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    addMessage('bot', 'שלום! מערכת האבחון הרפואי מוכנה. אנא הצג את עצמך והתחל לתאר את המקרה.');
+    // --- VISIBLE CHANGE FOR VERIFICATION ---
+    addMessage('bot', 'שלום! (גרסה 2) מערכת האבחון הרפואי מוכנה.');
     setChatState(true);
 });
