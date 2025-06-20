@@ -1,12 +1,10 @@
-// This file no longer needs the full Firebase SDK config.
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatLog = document.getElementById('chat-log');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-    // This is now a simple, relative URL thanks to the rewrite rule in firebase.json
-    const cloudFunctionUrl = '/api/chat';
+    // The new, real, and correct URL for our 2nd Gen Cloud Function
+    const cloudFunctionUrl = 'https://chat-uduwuioy5q-uc.a.run.app';
 
     function addMessage(sender, text) {
         const messageElement = document.createElement('div');
