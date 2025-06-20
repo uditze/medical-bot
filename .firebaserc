@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "medical-bot-project-3f141"
-  }
+  },
+  "targets": {
+    "medical-bot-project-3f141": {
+      "hosting": {
+        "medical-bot-v2": [
+          "medical-bot-v2"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
