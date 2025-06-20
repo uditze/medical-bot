@@ -1,36 +1,37 @@
-const functions = require("firebase-functions/v2"); // Using v2 for 2nd Gen
+const functions = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 const { OpenAI } = require("openai");
 
 admin.initializeApp();
 
-const openai = new OpenAI({
-  apiKey: functions.config().openai?.key,
-});
+// NOTE: We have removed the OpenAI client initialization from the global scope.
 
-// This is a 2nd Gen onRequest function with CORS enabled
 exports.chat = functions.https.onRequest(
-  { cors: true }, // This line enables CORS automatically
+  { cors: true }, // Enable CORS for all origins
   async (req, res) => {
-    // We expect a POST request with a JSON body
-    if (req.method !== 'POST') {
-      return res.status(405).send('Method Not Allowed');
-    }
-
-    const userMessage = req.body.message;
-
-    if (!userMessage) {
-      return res.status(400).json({ error: 'Payload must include a "message" field.' });
-    }
-
     try {
+      if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+      }
+
+      const userMessage = req.body.message;
+      if (!userMessage) {
+        return res.status(400).json({ error: 'Payload must include a "message" field.' });
+      }
+
+      // Initialize OpenAI client here, inside the request, after configs are loaded.
+      const openai = new OpenAI({
+        apiKey: functions.config().openai.key,
+      });
+
       // --- Placeholder Logic ---
       const botReply = `זוהי תשובת דמה מהשרת. קיבלתי: "${userMessage}"`;
+
       res.status(200).json({ reply: botReply });
 
     } catch (error) {
-      console.error("Error processing chat message:", error);
-      res.status(500).json({ error: "An unexpected error occurred." });
+      console.error("Error in chat function:", error);
+      res.status(500).json({ error: "An internal server error occurred." });
     }
   }
 );
