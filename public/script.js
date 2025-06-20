@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
+    // !!! FONTOS !!! A Cloud Function URL-je
+    const cloudFunctionUrl = 'https://us-central1-medical-bot-project-3f141.cloudfunctions.net/chat';
+
     /**
      * Appends a message to the chat log
      * @param {string} sender - 'user' or 'bot'
@@ -20,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Handles sending the user's message
      */
-    function handleSendMessage() {
+    async function handleSendMessage() {
         const messageText = userInput.value.trim();
         if (!messageText) return;
 
@@ -28,11 +31,28 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.value = '';
         setChatState(false); // Disable input while bot replies
 
-        // Placeholder for backend call
-        setTimeout(() => {
-            addMessage('bot', `זוהי תשובת דמה. קיבלתי את ההודעה: "${messageText}"`);
+        try {
+            const response = await fetch(cloudFunctionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: messageText }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`שגיאת שרת: ${response.status}`);
+            }
+
+            const data = await response.json();
+            addMessage('bot', data.reply);
+
+        } catch (error) {
+            console.error("שגיאה בתקשורת עם השרת:", error);
+            addMessage('bot', 'אופס, התרחשה שגיאה. אנא נסה שוב מאוחר יותר.');
+        } finally {
             setChatState(true); // Re-enable input
-        }, 1000);
+        }
     }
 
     /**
