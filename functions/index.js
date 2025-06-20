@@ -1,41 +1,35 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { OpenAI } = require("openai");
-const cors = require("cors")({ origin: true });
 
 admin.initializeApp();
 
-// The OpenAI API key will be set as an environment variable in Firebase
-// For now, this is a placeholder.
 const openai = new OpenAI({
   apiKey: functions.config().openai?.key,
 });
 
+// This is now a 2nd Gen 'onCall' function.
+// It's simpler and more secure for client-to-server communication.
+exports.chat = functions.https.onCall(async (data, context) => {
+  // The user's message is in data.message
+  const userMessage = data.message;
 
-exports.chat = functions.https.onRequest((req, res) => {
-  // Handle CORS preflight requests
-  cors(req, res, async () => {
-    if (req.method !== 'POST') {
-      return res.status(405).send('Method Not Allowed');
-    }
+  if (!userMessage || typeof userMessage !== 'string') {
+    // Throwing an HttpsError is the recommended way to handle errors.
+    throw new functions.https.HttpsError('invalid-argument', 'The function must be called with one argument "message" that is a string.');
+  }
 
-    const userMessage = req.body.message;
+  // --- Placeholder Logic ---
+  // In the future, we will interact with the OpenAI Assistant API here.
+  // For now, we just echo the message back.
+  try {
+    const botReply = `זוהי תשובת דמה מהשרת. קיבלתי: "${userMessage}"`;
+    // Return data to the client
+    return { reply: botReply };
 
-    if (!userMessage) {
-      return res.status(400).json({ error: 'Message payload is required' });
-    }
-
-    try {
-      // --- Placeholder Logic ---
-      // In the future, we will interact with the OpenAI Assistant API here.
-      // For now, we just echo the message back.
-      const botReply = `זוהי תשובת דמה מהשרת. קיבלתי: "${userMessage}"`;
-
-      res.status(200).json({ reply: botReply });
-
-    } catch (error) {
-      console.error("Error processing chat message:", error);
-      res.status(500).json({ error: "Something went wrong." });
-    }
-  });
+  } catch (error) {
+    console.error("Error processing chat message:", error);
+    // Throw a generic error to the client
+    throw new functions.https.HttpsError('internal', 'An unexpected error occurred.');
+  }
 });
