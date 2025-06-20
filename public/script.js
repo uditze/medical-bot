@@ -1,64 +1,52 @@
+// Your personal Firebase configuration object
+const firebaseConfig = {
+  apiKey: "AIzaSyBaAiwpk32a_2GFTxEN-m2JUKvSYBQezE4",
+  authDomain: "medical-bot-project-3f141.firebaseapp.com",
+  projectId: "medical-bot-project-3f141",
+  storageBucket: "medical-bot-project-3f141.firebasestorage.app",
+  messagingSenderId: "994123999450",
+  appId: "1:994123999450:web:4d5d67866b7482e8649de3"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const functions = firebase.functions();
+const callChatFunction = functions.httpsCallable('chat');
+
+// App logic
 document.addEventListener('DOMContentLoaded', () => {
     const chatLog = document.getElementById('chat-log');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-    // !!! FONTOS !!! A Cloud Function URL-je
-    const cloudFunctionUrl = 'https://us-central1-medical-bot-project-3f141.cloudfunctions.net/chat';
-
-    /**
-     * Appends a message to the chat log
-     * @param {string} sender - 'user' or 'bot'
-     * @param {string} text - The message content
-     */
     function addMessage(sender, text) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', `${sender}-message`);
         messageElement.textContent = text;
         chatLog.appendChild(messageElement);
-        // Auto-scroll to the bottom
         chatLog.scrollTop = chatLog.scrollHeight;
     }
 
-    /**
-     * Handles sending the user's message
-     */
     async function handleSendMessage() {
         const messageText = userInput.value.trim();
         if (!messageText) return;
 
         addMessage('user', messageText);
         userInput.value = '';
-        setChatState(false); // Disable input while bot replies
+        setChatState(false);
 
         try {
-            const response = await fetch(cloudFunctionUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: messageText }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`שגיאת שרת: ${response.status}`);
-            }
-
-            const data = await response.json();
-            addMessage('bot', data.reply);
-
+            // Calling the new 'onCall' function
+            const result = await callChatFunction({ message: messageText });
+            addMessage('bot', result.data.reply);
         } catch (error) {
-            console.error("שגיאה בתקשורת עם השרת:", error);
-            addMessage('bot', 'אופס, התרחשה שגיאה. אנא נסה שוב מאוחר יותר.');
+            console.error("Error calling function:", error);
+            addMessage('bot', 'אופס, התרחשה שגיאה בתקשורת עם השרת.');
         } finally {
-            setChatState(true); // Re-enable input
+            setChatState(true);
         }
     }
 
-    /**
-     * Enables or disables the chat input controls
-     * @param {boolean} isEnabled - True to enable, false to disable
-     */
     function setChatState(isEnabled) {
         userInput.disabled = !isEnabled;
         sendButton.disabled = !isEnabled;
@@ -67,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Event Listeners
     sendButton.addEventListener('click', handleSendMessage);
     userInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
@@ -75,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initial state
     addMessage('bot', 'שלום! מערכת האבחון הרפואי מוכנה. אנא הצג את עצמך והתחל לתאר את המקרה.');
     setChatState(true);
 });
