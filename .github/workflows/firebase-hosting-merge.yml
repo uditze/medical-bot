@@ -12,6 +12,6 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting:medical-bot-v2,functions --project medical-bot-project-3f141
+          args: deploy --project medical-bot-project-3f141
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MEDICAL_BOT_PROJECT_3F141 }}
